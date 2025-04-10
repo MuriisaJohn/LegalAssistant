@@ -1,44 +1,29 @@
-import { apiRequest } from "@/lib/queryClient";
+import { MessageResponse } from "@/types";
+import { apiRequest } from "./queryClient";
 
 /**
- * Interface for chat messages
- */
-export interface ChatMessage {
-  role: "user" | "assistant";
-  content: string;
-}
-
-/**
- * Function to get a legal response from the OpenAI API via our backend
+ * Send a message to the OpenAI API through our backend
+ * 
  * @param message The user's message
- * @param context Optional context to include with the message
- * @param language The language for the response
+ * @param conversationId Optional conversation ID for context
+ * @param language The language to respond in
  * @returns A promise that resolves to the API response
  */
-export async function getLegalResponse(
+export async function sendMessage(
   message: string,
-  language: string = "English",
-  context?: string
-): Promise<Response> {
-  return apiRequest("POST", "/api/openai/legal-advice", {
-    message,
-    language,
-    context
-  });
-}
-
-/**
- * Function to translate text using OpenAI
- * @param text The text to translate
- * @param targetLanguage The target language
- * @returns A promise that resolves to the translated text
- */
-export async function translateText(
-  text: string,
-  targetLanguage: string
-): Promise<Response> {
-  return apiRequest("POST", "/api/openai/translate", {
-    text,
-    targetLanguage
-  });
+  conversationId?: string,
+  language: string = "English"
+): Promise<MessageResponse> {
+  try {
+    const response = await apiRequest("POST", "/api/chat", {
+      message,
+      conversationId,
+      language
+    });
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error sending message:", error);
+    throw error;
+  }
 }

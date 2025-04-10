@@ -1,27 +1,8 @@
-import { pgTable, text, serial, timestamp, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Role enum for message sender (user or assistant)
-export const roleEnum = pgEnum("role", ["user", "assistant"]);
-
-// Message model for chat history
-export const messages = pgTable("messages", {
-  id: serial("id").primaryKey(),
-  role: roleEnum("role").notNull(),
-  content: text("content").notNull(),
-  language: text("language").notNull().default("English"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-// Insert schema for messages
-export const insertMessageSchema = createInsertSchema(messages).pick({
-  role: true,
-  content: true,
-  language: true,
-});
-
-// Legacy user schema maintained for compatibility
+// User schema
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
@@ -33,8 +14,58 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
 });
 
-// Export types
+// Message schema
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  role: text("role").notNull(), // 'user', 'assistant', or 'system'
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  conversationId: text("conversation_id").notNull(),
+});
+
+export const insertMessageSchema = createInsertSchema(messages).pick({
+  role: true,
+  content: true,
+  conversationId: true,
+});
+
+// Legal context schema
+export const legalContexts = pgTable("legal_contexts", {
+  id: serial("id").primaryKey(),
+  content: text("content").notNull(),
+  title: text("title").notNull(),
+});
+
+export const insertLegalContextSchema = createInsertSchema(legalContexts).pick({
+  content: true,
+  title: true,
+});
+
+// Define types for our schemas
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
+
+export type InsertLegalContext = z.infer<typeof insertLegalContextSchema>;
+export type LegalContext = typeof legalContexts.$inferSelect;
+
+// Define message request and response schemas for API
+export const messageRequestSchema = z.object({
+  message: z.string().min(1, "Message cannot be empty"),
+  conversationId: z.string().optional(),
+  language: z.string().default("English")
+});
+
+export type MessageRequest = z.infer<typeof messageRequestSchema>;
+
+export const messageResponseSchema = z.object({
+  message: z.object({
+    role: z.string(),
+    content: z.string()
+  }),
+  conversationId: z.string()
+});
+
+export type MessageResponse = z.infer<typeof messageResponseSchema>;

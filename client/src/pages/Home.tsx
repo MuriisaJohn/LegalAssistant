@@ -1,78 +1,57 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Header from "@/components/Header";
-import Disclaimer from "@/components/Disclaimer";
-import ChatContainer from "@/components/Chat/ChatContainer";
-import Footer from "@/components/Footer";
-import ApiKeyModal from "@/components/ApiKeyModal";
-import { useToast } from "@/hooks/use-toast";
+import ContextPanel from "@/components/ContextPanel";
+import ChatInterface from "@/components/ChatInterface";
+import { Message } from "@/types";
 
-export default function Home() {
-  const [language, setLanguage] = useState<string>("English");
-  const [apiKey, setApiKey] = useState<string | null>(null);
-  const [showApiKeyModal, setShowApiKeyModal] = useState<boolean>(false);
-  const { toast } = useToast();
+const Home = () => {
+  const [isMobileContextVisible, setIsMobileContextVisible] = useState(false);
+  const [language, setLanguage] = useState("English");
+  const [conversationId, setConversationId] = useState<string | undefined>(undefined);
 
-  useEffect(() => {
-    // Check for API key in localStorage
-    const storedApiKey = localStorage.getItem("openai_api_key");
-    if (storedApiKey) {
-      setApiKey(storedApiKey);
-    } else {
-      setShowApiKeyModal(true);
-    }
-  }, []);
-
-  const handleSaveApiKey = (key: string) => {
-    if (!key.trim() || !key.startsWith("sk-")) {
-      toast({
-        title: "Invalid API Key",
-        description: "Please enter a valid OpenAI API key starting with 'sk-'",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    localStorage.setItem("openai_api_key", key);
-    setApiKey(key);
-    setShowApiKeyModal(false);
-    
-    toast({
-      title: "API Key Saved",
-      description: "Your OpenAI API key has been saved successfully.",
-      duration: 3000,
-    });
-  };
-
-  const toggleLanguage = () => {
-    const newLanguage = language === "English" ? "Luganda" : "English";
-    setLanguage(newLanguage);
-    
-    toast({
-      title: "Language Changed",
-      description: `Interface language changed to ${newLanguage}`,
-      duration: 2000,
-    });
+  const toggleMobileContext = () => {
+    setIsMobileContextVisible(!isMobileContextVisible);
   };
 
   return (
-    <div className="flex flex-col h-screen">
-      <Header language={language} onToggleLanguage={toggleLanguage} />
-      
-      <main className="flex-grow overflow-hidden flex flex-col">
-        <div className="container mx-auto px-4 py-4 flex-grow flex flex-col">
-          <Disclaimer />
-          <ChatContainer apiKey={apiKey} language={language} />
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <Header language={language} />
+
+      {/* Main Content Area */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
+        {/* Mobile Context Panel (only shown when toggled) */}
+        {isMobileContextVisible && (
+          <div className="md:hidden w-full">
+            <ContextPanel />
+          </div>
+        )}
+
+        {/* Desktop Context Panel (always visible on larger screens) */}
+        <div className="hidden md:block md:w-1/3">
+          <ContextPanel />
         </div>
-      </main>
-      
-      <Footer />
-      
-      {showApiKeyModal && (
-        <ApiKeyModal 
-          onSave={handleSaveApiKey} 
-          onClose={() => setShowApiKeyModal(false)} 
+
+        {/* Chat Interface */}
+        <ChatInterface 
+          toggleContext={toggleMobileContext} 
+          isMobileContextVisible={isMobileContextVisible}
+          conversationId={conversationId}
+          setConversationId={setConversationId}
+          language={language}
         />
-      )}
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-sm text-gray-500">
+            Ugandan Legal Assistant | Powered by AI | Not a substitute for professional legal advice
+          </p>
+        </div>
+      </footer>
     </div>
   );
-}
+};
+
+export default Home;
