@@ -89,7 +89,7 @@ const SimpleChatInterface: React.FC<ChatInterfaceProps> = ({
   return (
     <div className="flex-1 flex flex-col bg-white rounded-lg shadow-sm overflow-hidden">
       {/* Legal Disclaimer Banner */}
-      <div className="bg-amber-50 border-l-4 border-amber-500 p-4">
+      <div className="bg-gradient-to-r from-amber-50 to-amber-100 border-l-4 border-amber-500 p-4 shadow-sm">
         <div className="flex">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-amber-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -97,8 +97,8 @@ const SimpleChatInterface: React.FC<ChatInterfaceProps> = ({
             </svg>
           </div>
           <div className="ml-3">
-            <p className="text-sm text-amber-700">
-              <strong>Disclaimer:</strong> This AI assistant provides general legal information based on Ugandan law, not personalized legal advice. Always consult with a qualified attorney for your specific situation.
+            <p className="text-sm font-medium text-amber-800">
+              <strong>Legal Disclaimer:</strong> This AI assistant provides general legal information based on Ugandan law, not personalized legal advice. Always consult with a qualified attorney for your specific situation.
             </p>
           </div>
         </div>
@@ -128,11 +128,19 @@ const SimpleChatInterface: React.FC<ChatInterfaceProps> = ({
               <div 
                 className={`${
                   message.role === 'user' 
-                    ? 'user-message bg-primary text-white rounded-[1rem_1rem_0_1rem]' 
-                    : 'assistant-message bg-gray-100 text-gray-800 rounded-[1rem_1rem_1rem_0] font-serif'
-                } p-3 max-w-[80%]`}
+                    ? 'user-message bg-gradient-to-br from-primary to-primary-dark text-white rounded-[1.25rem_1.25rem_0.25rem_1.25rem] shadow-md' 
+                    : 'assistant-message bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 rounded-[1.25rem_1.25rem_1.25rem_0.25rem] shadow-sm font-serif border border-gray-200'
+                } p-4 max-w-[80%]`}
               >
                 <p className="whitespace-pre-wrap">{message.content}</p>
+                {message.role === 'assistant' && (
+                  <div className="mt-3 text-xs text-gray-500 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z" />
+                    </svg>
+                    <span>References: Constitution of Uganda, Articles 21-29</span>
+                  </div>
+                )}
               </div>
             </div>
           ))
