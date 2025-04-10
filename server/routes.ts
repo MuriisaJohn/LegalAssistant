@@ -2,6 +2,8 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
+import multer from 'multer';
+import path from 'path';
 
 // Import controllers from feature folders
 import { getAllLegalContexts, getLegalContextById } from './features/legal-context/legal-context-controller';
