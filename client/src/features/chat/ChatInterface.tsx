@@ -6,10 +6,24 @@ import { Input } from '@/components/ui/input';
 import { Message, MessageResponse } from '@/types';
 import { ChevronDown, Send, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-// Use destructured imports instead of default imports due to project structure
-import { default as ChatMessage } from './ChatMessage';
-import { default as ChatInput } from './ChatInput';
-import { default as Disclaimer } from './Disclaimer';
+
+// Disclaimer component
+const Disclaimer = () => (
+  <div className="bg-amber-50 border-l-4 border-amber-500 p-4">
+    <div className="flex">
+      <div className="flex-shrink-0">
+        <svg className="h-5 w-5 text-amber-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clipRule="evenodd" />
+        </svg>
+      </div>
+      <div className="ml-3">
+        <p className="text-sm text-amber-700">
+          <strong>Disclaimer:</strong> This AI assistant provides general legal information based on Ugandan law, not personalized legal advice. Always consult with a qualified attorney for your specific situation.
+        </p>
+      </div>
+    </div>
+  </div>
+);
 
 interface ChatInterfaceProps {
   toggleContext: () => void;
@@ -28,6 +42,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const [inputMessage, setInputMessage] = useState('');
 
   // Fetch messages if we have a conversation ID
   const { data: messages = [], isLoading } = useQuery<Message[]>({
@@ -102,17 +117,64 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           </div>
         ) : (
           displayMessages.map((message, index) => (
-            <ChatMessage key={index} message={message} />
+            <div 
+              key={index}
+              className={`flex ${message.role === 'user' ? 'flex-row-reverse' : ''} items-start mb-4`}
+            >
+              <div className={`flex-shrink-0 ${message.role === 'user' ? 'ml-3' : 'mr-3'}`}>
+                <div 
+                  className={`h-8 w-8 rounded-full flex items-center justify-center ${
+                    message.role === 'user' ? 'bg-gray-300' : 'bg-primary text-white'
+                  }`}
+                >
+                  <User className="h-5 w-5" />
+                </div>
+              </div>
+              <div 
+                className={`${
+                  message.role === 'user' 
+                    ? 'user-message bg-primary text-white rounded-[1rem_1rem_0_1rem]' 
+                    : 'assistant-message bg-gray-100 text-gray-800 rounded-[1rem_1rem_1rem_0] font-serif'
+                } p-3 max-w-[80%]`}
+              >
+                <p className="whitespace-pre-wrap">{message.content}</p>
+              </div>
+            </div>
           ))
         )}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Message Input */}
-      <ChatInput 
-        onSendMessage={handleSendMessage} 
-        isDisabled={sendMessageMutation.isPending} 
-      />
+      <div className="border-t border-gray-200 p-4 bg-gray-50">
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          if (inputMessage.trim()) {
+            handleSendMessage(inputMessage);
+            setInputMessage('');
+          }
+        }} className="flex items-center space-x-2">
+          <Input
+            type="text"
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            placeholder="Type your legal question..."
+            disabled={sendMessageMutation.isPending}
+          />
+          <Button 
+            type="submit" 
+            className="bg-primary hover:bg-primary-dark text-white rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+            disabled={sendMessageMutation.isPending}
+          >
+            {sendMessageMutation.isPending ? (
+              <div className="animate-spin h-5 w-5 border-2 border-t-transparent border-white rounded-full" />
+            ) : (
+              <Send className="h-5 w-5" />
+            )}
+          </Button>
+        </form>
+      </div>
 
       {/* Mobile Context Toggle */}
       <div className="md:hidden border-t border-gray-200 p-2 bg-gray-50">
