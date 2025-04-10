@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Message, MessageResponse } from '@/types';
 import { ChevronDown, Send, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import ChatMessage from './ChatMessage';
-import ChatInput from './ChatInput';
-import Disclaimer from './Disclaimer';
+// Use destructured imports instead of default imports due to project structure
+import { default as ChatMessage } from './ChatMessage';
+import { default as ChatInput } from './ChatInput';
+import { default as Disclaimer } from './Disclaimer';
 
 interface ChatInterfaceProps {
   toggleContext: () => void;

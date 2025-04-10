@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { storage } from '../../storage';
 import { generateLegalResponse } from './openai-service';
-import { MessageRequest, MessageResponse } from '@/schema';
+import { MessageRequest, MessageResponse } from '../../../shared/schema';
 
 /**
  * Handles retrieving all messages for a specific conversation
