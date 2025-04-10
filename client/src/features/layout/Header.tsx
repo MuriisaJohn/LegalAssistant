@@ -1,7 +1,7 @@
 import React from 'react';
-import { GavelIcon, Scale, BookOpen } from 'lucide-react';
+import { GavelIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface HeaderProps {
   language: string;
@@ -10,35 +10,28 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ language, setLanguage }) => {
   return (
-    <header className="bg-gradient-to-r from-primary to-primary-dark text-white p-4 shadow-lg">
-      <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center">
-        <div className="flex items-center mb-4 sm:mb-0">
-          <div className="bg-white/10 p-2 rounded-lg mr-3 backdrop-blur-sm">
+    <header className="bg-white border-b border-gray-200 py-3 px-6">
+      <div className="container mx-auto flex justify-between items-center">
+        <div className="flex items-center space-x-2">
+          <div className="text-primary">
             <GavelIcon className="h-6 w-6" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Ugandan Legal Assistant</h1>
-            <div className="flex items-center text-xs text-white/70 mt-1">
-              <Scale className="h-3 w-3 mr-1" />
-              <span>Powered by AI</span>
-              <span className="mx-2">•</span>
-              <BookOpen className="h-3 w-3 mr-1" />
-              <span>Ugandan Law</span>
-            </div>
-          </div>
+          <h1 className="text-xl font-serif font-semibold text-primary">LegalAI</h1>
         </div>
         
-        <div className="flex items-center space-x-4">
-          <Badge variant="outline" className="bg-white/10 text-white border-white/20 px-2 py-1">
-            Beta
-          </Badge>
-          <div className="flex items-center">
-            <span className="mr-2 text-sm font-medium">Language:</span>
+        <div className="flex items-center space-x-4 md:space-x-6">
+          <nav className="hidden md:flex space-x-6">
+            <a href="#" className="text-gray-600 hover:text-primary font-medium">Documents</a>
+            <a href="#" className="text-gray-600 hover:text-primary font-medium border-b-2 border-primary">Chat</a>
+            <a href="#" className="text-gray-600 hover:text-primary font-medium">About</a>
+          </nav>
+          
+          <div className="flex items-center space-x-3">
             <Select
               value={language}
               onValueChange={setLanguage}
             >
-              <SelectTrigger className="w-[140px] bg-white/10 text-white border-white/20 focus:ring-white/30">
+              <SelectTrigger className="w-[100px] bg-white border-gray-200">
                 <SelectValue placeholder="English" />
               </SelectTrigger>
               <SelectContent>
@@ -48,6 +41,14 @@ const Header: React.FC<HeaderProps> = ({ language, setLanguage }) => {
                 <SelectItem value="French">French</SelectItem>
               </SelectContent>
             </Select>
+            
+            <Button variant="outline" className="bg-white border-gray-300 text-gray-700">
+              Login
+            </Button>
+            
+            <Button className="bg-[#14284b] hover:bg-[#0f203a] text-white">
+              Sign Up
+            </Button>
           </div>
         </div>
       </div>

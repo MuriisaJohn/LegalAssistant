@@ -87,25 +87,21 @@ const SimpleChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-white rounded-lg shadow-sm overflow-hidden">
-      {/* Legal Disclaimer Banner */}
-      <div className="bg-gradient-to-r from-amber-50 to-amber-100 border-l-4 border-amber-500 p-4 shadow-sm">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-amber-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clipRule="evenodd" />
-            </svg>
+    <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Chat Header with Tabs */}
+      <div className="border-b border-gray-200 bg-white">
+        <div className="flex px-4 py-3 space-x-4">
+          <div className="text-gray-500 px-3 py-1 border-b-2 border-primary text-primary font-medium text-sm cursor-pointer">
+            Chat
           </div>
-          <div className="ml-3">
-            <p className="text-sm font-medium text-amber-800">
-              <strong>Legal Disclaimer:</strong> This AI assistant provides general legal information based on Ugandan law, not personalized legal advice. Always consult with a qualified attorney for your specific situation.
-            </p>
+          <div className="text-gray-500 px-3 py-1 text-sm cursor-pointer hover:text-gray-700">
+            Document Info
           </div>
         </div>
       </div>
       
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 chat-container" style={{ height: 'calc(100vh - 13rem)' }}>
+      <div className="flex-1 overflow-y-auto bg-gray-50 p-6" style={{ height: 'calc(100vh - 13rem)' }}>
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -114,57 +110,63 @@ const SimpleChatInterface: React.FC<ChatInterfaceProps> = ({
           displayMessages.map((message, index) => (
             <div 
               key={index}
-              className={`flex ${message.role === 'user' ? 'flex-row-reverse' : ''} items-start mb-4`}
+              className="mb-6"
             >
-              <div className={`flex-shrink-0 ${message.role === 'user' ? 'ml-3' : 'mr-3'}`}>
-                <div 
-                  className={`h-8 w-8 rounded-full flex items-center justify-center ${
-                    message.role === 'user' ? 'bg-gray-300' : 'bg-primary text-white'
-                  }`}
-                >
-                  <User className="h-5 w-5" />
-                </div>
-              </div>
-              <div 
-                className={`${
-                  message.role === 'user' 
-                    ? 'user-message bg-gradient-to-br from-primary to-primary-dark text-white rounded-[1.25rem_1.25rem_0.25rem_1.25rem] shadow-md' 
-                    : 'assistant-message bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 rounded-[1.25rem_1.25rem_1.25rem_0.25rem] shadow-sm font-serif border border-gray-200'
-                } p-4 max-w-[80%]`}
-              >
-                <p className="whitespace-pre-wrap">
-                  {message.role === 'assistant' && message.content.includes("References:") 
-                    ? message.content.split("References:")[0].trim() 
-                    : message.content}
-                </p>
+              <div className="flex items-start">
                 {message.role === 'assistant' && (
-                  <div>
-                    {/* Extract and format references if they exist */}
-                    {message.content.includes("References:") ? (
-                      <>
-                        <div className="mt-3 pt-3 border-t border-gray-200">
-                          <div className="flex items-center mb-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z" />
-                            </svg>
-                            <span className="text-xs font-medium text-primary">Legal References</span>
-                          </div>
-                          <div className="text-xs text-gray-600 pl-5">
-                            {message.content.split("References:").pop()?.trim()}
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="mt-3 text-xs text-gray-500 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z" />
-                        </svg>
-                        <span>Based on Ugandan legal documents</span>
-                      </div>
-                    )}
+                  <div className="text-xs text-gray-500 mb-1 ml-12">
+                    {new Date(message.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   </div>
                 )}
               </div>
+              
+              <div className={`flex items-start ${message.role === 'user' ? 'justify-end' : ''}`}>
+                {message.role === 'assistant' && (
+                  <div className="flex-shrink-0 mr-3">
+                    <div className="h-8 w-8 rounded-full bg-[#14284b] text-white flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+                
+                <div 
+                  className={`${
+                    message.role === 'user' 
+                      ? 'bg-[#14284b] text-white rounded-lg max-w-[60%] ml-auto' 
+                      : 'bg-white text-gray-800 rounded-lg shadow-sm border border-gray-200 max-w-[75%]'
+                  } p-4`}
+                >
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                    {message.role === 'assistant' && message.content.includes("References:") 
+                      ? message.content.split("References:")[0].trim() 
+                      : message.content}
+                  </p>
+                  
+                  {message.role === 'assistant' && message.content.includes("References:") && (
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <div className="flex items-center mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span className="text-xs font-medium text-primary">Referenced Articles</span>
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        {message.content.split("References:").pop()?.trim()}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {message.role === 'user' && (
+                <div className="flex justify-end">
+                  <div className="text-xs text-gray-500 mt-1 mr-2">
+                    {new Date(message.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                  </div>
+                </div>
+              )}
             </div>
           ))
         )}
@@ -172,50 +174,46 @@ const SimpleChatInterface: React.FC<ChatInterfaceProps> = ({
       </div>
 
       {/* Message Input */}
-      <div className="border-t border-gray-200 p-5 bg-gradient-to-b from-white to-gray-50">
-        <div className="max-w-3xl mx-auto">
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            if (inputMessage.trim()) {
-              handleSendMessage(inputMessage);
-              setInputMessage('');
-            }
-          }} className="flex items-center space-x-3 relative">
-            <Input
-              type="text"
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              className="flex-1 border border-gray-300 bg-white rounded-full px-5 py-3 pr-12 text-base shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent"
-              placeholder="Ask any legal question about Ugandan law..."
-              disabled={sendMessageMutation.isPending}
-            />
-            <Button 
-              type="submit" 
-              className="bg-gradient-to-r from-primary to-primary-dark hover:opacity-90 text-white rounded-full p-3 h-auto w-auto shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary absolute right-1 top-1/2 transform -translate-y-1/2"
-              disabled={sendMessageMutation.isPending}
-            >
-              {sendMessageMutation.isPending ? (
-                <div className="animate-spin h-5 w-5 border-2 border-t-transparent border-white rounded-full" />
-              ) : (
-                <Send className="h-5 w-5" />
-              )}
-            </Button>
-          </form>
-
-          <div className="text-xs text-center text-gray-500 mt-2">
-            Your questions will be answered based on Ugandan legal reference documents
-          </div>
-        </div>
+      <div className="border-t border-gray-200 p-4 bg-white">
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          if (inputMessage.trim()) {
+            handleSendMessage(inputMessage);
+            setInputMessage('');
+          }
+        }} className="flex items-center space-x-3 relative">
+          <Input
+            type="text"
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            className="flex-1 border border-gray-300 bg-white rounded-md py-2 pl-4 pr-10 focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary/50"
+            placeholder="Ask a legal question..."
+            disabled={sendMessageMutation.isPending}
+          />
+          <Button 
+            type="submit" 
+            className="bg-[#14284b] hover:bg-[#0f203a] text-white rounded-md p-2 h-auto w-auto absolute right-1 top-1/2 transform -translate-y-1/2"
+            disabled={sendMessageMutation.isPending}
+          >
+            {sendMessageMutation.isPending ? (
+              <div className="animate-spin h-5 w-5 border-2 border-t-transparent border-white rounded-full" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
+        </form>
       </div>
 
       {/* Mobile Context Toggle */}
-      <div className="md:hidden border-t border-gray-200 p-2 bg-gray-50">
+      <div className="md:hidden border-t border-gray-200 p-2 bg-white">
         <button 
           onClick={toggleContext}
-          className="w-full py-2 text-sm font-medium text-center text-primary hover:text-primary-dark transition-colors flex items-center justify-center rounded-md hover:bg-gray-100"
+          className="w-full py-2 text-sm font-medium text-center text-gray-600 hover:text-[#14284b] transition-colors flex items-center justify-center"
         >
-          <BookOpen className="h-4 w-4 mr-2" />
-          <span>{isMobileContextVisible ? "Hide Legal References" : "Show Legal References"}</span>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span>{isMobileContextVisible ? "Hide Documents" : "Show Documents"}</span>
           <ChevronDown className={`ml-1 h-4 w-4 transition-transform duration-200 ${isMobileContextVisible ? 'transform rotate-180' : ''}`} />
         </button>
       </div>
