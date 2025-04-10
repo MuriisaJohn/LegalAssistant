@@ -3,7 +3,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import Header from './Header';
 import Footer from './Footer';
 import LegalContextPanel from '../legal/LegalContextPanel';
-import ChatInterface from '../chat/ChatInterface';
+import SimpleChatInterface from '../chat/SimpleChatInterface';
 
 const MainLayout: React.FC = () => {
   const [conversationId, setConversationId] = useState<string>();
@@ -48,7 +48,7 @@ const MainLayout: React.FC = () => {
               isMobile && isMobileContextVisible ? 'hidden' : 'block'
             }`}
           >
-            <ChatInterface 
+            <SimpleChatInterface 
               toggleContext={toggleContext}
               isMobileContextVisible={isMobileContextVisible}
               conversationId={conversationId}

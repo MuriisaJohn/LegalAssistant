@@ -7,8 +7,6 @@ import { Message, MessageResponse } from '@/types';
 import { ChevronDown, Send, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-
-
 interface ChatInterfaceProps {
   toggleContext: () => void;
   isMobileContextVisible: boolean;
@@ -17,7 +15,7 @@ interface ChatInterfaceProps {
   language: string;
 }
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({
+const SimpleChatInterface: React.FC<ChatInterfaceProps> = ({
   toggleContext,
   isMobileContextVisible,
   conversationId,
@@ -38,7 +36,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const displayMessages = messages.length > 0 ? messages : [
     {
       id: 0,
-      role: 'assistant',
+      role: 'assistant' as 'assistant',
       content: "Welcome! I'm your Ugandan legal assistant. How can I help you with your legal questions today?",
       conversationId: conversationId || '',
       createdAt: new Date()
@@ -187,4 +185,4 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   );
 };
 
-export default ChatInterface;
+export default SimpleChatInterface;
