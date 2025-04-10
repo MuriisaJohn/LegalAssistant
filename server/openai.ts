@@ -35,6 +35,9 @@ Instructions:
 - Base your answer strictly on the provided context. If the answer is not in the context, say: "The document does not contain enough information to answer this."
 - Summarize any long sections as needed.
 - Keep the answer concise and formal, in the same language as the original question (${language}).
+- Always include specific article references from the legal documents that support your answer.
+- Format your response with a clear separation between the main answer and references.
+- Present the references in this format at the end of your answer: "References: [Document Name], Articles [article numbers]"
 
 Answer:
     `;

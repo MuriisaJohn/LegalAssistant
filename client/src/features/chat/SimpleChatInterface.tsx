@@ -4,7 +4,7 @@ import { queryClient, apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Message, MessageResponse } from '@/types';
-import { ChevronDown, Send, User } from 'lucide-react';
+import { ChevronDown, Send, User, BookOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ChatInterfaceProps {
@@ -132,13 +132,36 @@ const SimpleChatInterface: React.FC<ChatInterfaceProps> = ({
                     : 'assistant-message bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 rounded-[1.25rem_1.25rem_1.25rem_0.25rem] shadow-sm font-serif border border-gray-200'
                 } p-4 max-w-[80%]`}
               >
-                <p className="whitespace-pre-wrap">{message.content}</p>
+                <p className="whitespace-pre-wrap">
+                  {message.role === 'assistant' && message.content.includes("References:") 
+                    ? message.content.split("References:")[0].trim() 
+                    : message.content}
+                </p>
                 {message.role === 'assistant' && (
-                  <div className="mt-3 text-xs text-gray-500 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z" />
-                    </svg>
-                    <span>References: Constitution of Uganda, Articles 21-29</span>
+                  <div>
+                    {/* Extract and format references if they exist */}
+                    {message.content.includes("References:") ? (
+                      <>
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                          <div className="flex items-center mb-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z" />
+                            </svg>
+                            <span className="text-xs font-medium text-primary">Legal References</span>
+                          </div>
+                          <div className="text-xs text-gray-600 pl-5">
+                            {message.content.split("References:").pop()?.trim()}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="mt-3 text-xs text-gray-500 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z" />
+                        </svg>
+                        <span>Based on Ugandan legal documents</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -149,44 +172,51 @@ const SimpleChatInterface: React.FC<ChatInterfaceProps> = ({
       </div>
 
       {/* Message Input */}
-      <div className="border-t border-gray-200 p-4 bg-gray-50">
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          if (inputMessage.trim()) {
-            handleSendMessage(inputMessage);
-            setInputMessage('');
-          }
-        }} className="flex items-center space-x-2">
-          <Input
-            type="text"
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            placeholder="Type your legal question..."
-            disabled={sendMessageMutation.isPending}
-          />
-          <Button 
-            type="submit" 
-            className="bg-primary hover:bg-primary-dark text-white rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-            disabled={sendMessageMutation.isPending}
-          >
-            {sendMessageMutation.isPending ? (
-              <div className="animate-spin h-5 w-5 border-2 border-t-transparent border-white rounded-full" />
-            ) : (
-              <Send className="h-5 w-5" />
-            )}
-          </Button>
-        </form>
+      <div className="border-t border-gray-200 p-5 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-3xl mx-auto">
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            if (inputMessage.trim()) {
+              handleSendMessage(inputMessage);
+              setInputMessage('');
+            }
+          }} className="flex items-center space-x-3 relative">
+            <Input
+              type="text"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              className="flex-1 border border-gray-300 bg-white rounded-full px-5 py-3 pr-12 text-base shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent"
+              placeholder="Ask any legal question about Ugandan law..."
+              disabled={sendMessageMutation.isPending}
+            />
+            <Button 
+              type="submit" 
+              className="bg-gradient-to-r from-primary to-primary-dark hover:opacity-90 text-white rounded-full p-3 h-auto w-auto shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary absolute right-1 top-1/2 transform -translate-y-1/2"
+              disabled={sendMessageMutation.isPending}
+            >
+              {sendMessageMutation.isPending ? (
+                <div className="animate-spin h-5 w-5 border-2 border-t-transparent border-white rounded-full" />
+              ) : (
+                <Send className="h-5 w-5" />
+              )}
+            </Button>
+          </form>
+
+          <div className="text-xs text-center text-gray-500 mt-2">
+            Your questions will be answered based on Ugandan legal reference documents
+          </div>
+        </div>
       </div>
 
       {/* Mobile Context Toggle */}
       <div className="md:hidden border-t border-gray-200 p-2 bg-gray-50">
         <button 
           onClick={toggleContext}
-          className="w-full text-sm text-center text-gray-500 hover:text-gray-700 flex items-center justify-center"
+          className="w-full py-2 text-sm font-medium text-center text-primary hover:text-primary-dark transition-colors flex items-center justify-center rounded-md hover:bg-gray-100"
         >
-          <span>{isMobileContextVisible ? "Hide Legal Context" : "Show Legal Context"}</span>
-          <ChevronDown className="ml-1 h-4 w-4" />
+          <BookOpen className="h-4 w-4 mr-2" />
+          <span>{isMobileContextVisible ? "Hide Legal References" : "Show Legal References"}</span>
+          <ChevronDown className={`ml-1 h-4 w-4 transition-transform duration-200 ${isMobileContextVisible ? 'transform rotate-180' : ''}`} />
         </button>
       </div>
     </div>
