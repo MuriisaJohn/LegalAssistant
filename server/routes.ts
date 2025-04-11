@@ -8,9 +8,19 @@ import path from 'path';
 // Import controllers from feature folders
 import { getAllLegalContexts, getLegalContextById } from './features/legal-context/legal-context-controller';
 import { getMessagesByConversationId, handleChatMessage } from './features/chat/chat-controller';
+import { uploadDocument, analyzeDocument } from './features/documents/document-controller';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up API routes - prefix all routes with /api
+  
+  // Configure multer for file uploads
+  const multerStorage = multer.memoryStorage();
+  const upload = multer({
+    storage: multerStorage,
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB limit
+    }
+  });
   
   // Legal context routes
   app.get("/api/legal-contexts", getAllLegalContexts);
@@ -18,6 +28,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Message routes
   app.get("/api/messages/:conversationId", getMessagesByConversationId);
+  
+  // Document routes
+  app.post("/api/documents/upload", upload.single('document'), uploadDocument);
+  app.post("/api/documents/:documentId/analyze", analyzeDocument);
   
   // Chat routes
   app.post("/api/chat", async (req: Request, res: Response) => {
