@@ -49,123 +49,90 @@ export default function DocumentUpload() {
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!file) {
-      toast({
-        title: 'No File Selected',
-        description: 'Please select a file to upload.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    // Check file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast({
-        title: 'File Too Large',
-        description: 'Maximum file size is 10MB. Please select a smaller file.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    // Check file type
-    const allowedTypes = [
-      'application/pdf', 
-      'text/plain',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ];
-    
-    if (!allowedTypes.includes(file.type)) {
-      toast({
-        title: 'Invalid File Type',
-        description: 'Please upload a PDF, TXT, DOC, or DOCX file.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
+    if (!file) return;
+
     const formData = new FormData();
     formData.append('document', file);
-    
     uploadMutation.mutate(formData);
   };
 
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="text-xl font-semibold">Upload Legal Document</CardTitle>
+        <CardTitle>Upload Legal Document</CardTitle>
         <CardDescription>
-          Upload your legal document for AI-powered analysis and advice
+          Upload your legal documents for AI analysis and advice
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid w-full gap-1.5">
+          <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="document">Document</Label>
-            <div className="mt-2">
-              <div className="flex items-center justify-center w-full">
-                <label
-                  htmlFor="document"
-                  className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500"
-                >
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    {file ? (
-                      <>
-                        <FileText className="w-10 h-10 mb-3 text-gray-400" />
-                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                          <span className="font-semibold">{file.name}</span>
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {(file.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <UploadCloud className="w-10 h-10 mb-3 text-gray-400" />
-                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                          <span className="font-semibold">Click to upload</span> or drag and drop
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          PDF, TXT, DOC, DOCX (MAX. 10MB)
-                        </p>
-                      </>
-                    )}
-                  </div>
-                  <Input
-                    id="document"
-                    type="file"
-                    className="hidden"
-                    onChange={handleFileChange}
-                    accept=".pdf,.txt,.doc,.docx,application/pdf,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                  />
-                </label>
+            <div className="flex items-center justify-center w-full">
+              <label
+                htmlFor="document"
+                className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
+              >
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <UploadCloud className="w-8 h-8 mb-3 text-gray-400" />
+                  <p className="mb-2 text-sm text-gray-500">
+                    <span className="font-semibold">Click to upload</span> or drag and drop
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    PDF, DOC, DOCX, TXT (max. 10MB)
+                  </p>
+                </div>
+                <Input
+                  id="document"
+                  type="file"
+                  className="hidden"
+                  accept=".pdf,.txt,.doc,.docx,application/pdf,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  onChange={handleFileChange}
+                />
+              </label>
+            </div>
+          </div>
+
+          {file && (
+            <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+              <FileText className="h-5 w-5 text-[#14284b] mr-3" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {file.name}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {(file.size / 1024 / 1024).toFixed(2)} MB
+                </p>
               </div>
             </div>
-            {!file && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center mt-2">
-                <AlertCircle className="h-4 w-4 mr-1" />
-                Upload a document to get legal advice specific to its content
-              </p>
-            )}
-          </div>
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={!file || uploadMutation.isPending}
-          >
-            {uploadMutation.isPending ? 'Uploading...' : 'Upload Document'}
-          </Button>
+          )}
         </form>
       </CardContent>
+      <CardFooter className="flex justify-end">
+        <Button
+          type="submit"
+          onClick={handleSubmit}
+          disabled={!file || uploadMutation.isPending}
+          className="bg-[#14284b] hover:bg-[#0f203a] text-white"
+        >
+          {uploadMutation.isPending ? (
+            <div className="flex items-center">
+              <div className="animate-spin h-4 w-4 border-2 border-t-transparent border-white rounded-full mr-2" />
+              Uploading...
+            </div>
+          ) : (
+            'Upload Document'
+          )}
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

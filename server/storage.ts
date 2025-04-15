@@ -1,7 +1,8 @@
 import { 
   User, InsertUser, 
   Message, InsertMessage, 
-  LegalContext, InsertLegalContext 
+  LegalContext, InsertLegalContext,
+  Document, InsertDocument
 } from "@shared/schema";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -21,12 +22,20 @@ export interface IStorage {
   getLegalContext(id: number): Promise<LegalContext | undefined>;
   getAllLegalContexts(): Promise<LegalContext[]>;
   createLegalContext(context: InsertLegalContext): Promise<LegalContext>;
+
+  // Document operations
+  getDocumentById(id: string): Promise<Document | undefined>;
+  createDocument(document: InsertDocument): Promise<Document>;
+
+  // New document methods
+  storeDocument(document: { name: string; type: string; size: number; content: string }): Promise<string>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private messages: Map<number, Message>;
   private legalContexts: Map<number, LegalContext>;
+  private documents: Map<string, Document>;
   
   private userIdCounter: number;
   private messageIdCounter: number;
@@ -36,6 +45,7 @@ export class MemStorage implements IStorage {
     this.users = new Map();
     this.messages = new Map();
     this.legalContexts = new Map();
+    this.documents = new Map();
     
     this.userIdCounter = 1;
     this.messageIdCounter = 1;
@@ -137,6 +147,41 @@ export class MemStorage implements IStorage {
     const legalContext: LegalContext = { ...insertLegalContext, id };
     this.legalContexts.set(id, legalContext);
     return legalContext;
+  }
+
+  // Document methods
+  async getDocumentById(id: string): Promise<Document | undefined> {
+    return this.documents.get(id);
+  }
+
+  async createDocument(document: InsertDocument): Promise<Document> {
+    const id = uuidv4();
+    const now = new Date();
+    const newDocument: Document = {
+      ...document,
+      id,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.documents.set(id, newDocument);
+    return newDocument;
+  }
+
+  async storeDocument(document: { name: string; type: string; size: number; content: string }): Promise<string> {
+    const id = crypto.randomUUID();
+    const newDocument: Document = {
+      id,
+      name: document.name,
+      content: document.content,
+      type: document.type,
+      size: document.size,
+      analysis: '',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    this.documents.set(id, newDocument);
+    return id;
   }
 }
 

@@ -1,95 +1,181 @@
 import { Request, Response } from 'express';
-import fs from 'fs';
-import path from 'path';
 import { storage } from '../../storage';
-import { generateLegalResponse } from '../chat/openai-service';
+import { analyzeDocument } from './document-service';
+import mammoth from 'mammoth';
+import { z } from 'zod';
+
+// Document upload schema
+const documentSchema = z.object({
+  name: z.string(),
+  type: z.string(),
+  size: z.number()
+});
+
+// Document analysis schema
+const analysisSchema = z.object({
+  documentId: z.string(),
+  fileName: z.string()
+});
 
 // Function to handle document upload
 export async function uploadDocument(req: Request, res: Response) {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
+      return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const { originalname, buffer, mimetype } = req.file;
-    
-    // Extract text based on file type
-    let documentText = '';
-    
-    if (mimetype === 'application/pdf') {
-      // For now, just extract text directly without parsing PDF structure
-      // This is a simplified approach to avoid pdf-parse issues
-      documentText = buffer.toString('utf-8');
-      // Remove binary content and extract plain text portions
-      documentText = documentText.replace(/[^\x20-\x7E\x0A\x0D]/g, ' ');
-    } else if (mimetype === 'text/plain') {
-      // Plain text
-      documentText = buffer.toString('utf-8');
-    } else if (
-      mimetype === 'application/msword' || 
-      mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ) {
-      // For DOC/DOCX, we'd need more libraries to extract text
-      // For simplicity here, we'll just return a message
-      return res.status(400).json({ 
-        message: 'DOC/DOCX format is not supported yet. Please upload a PDF or text file.' 
-      });
-    } else {
-      return res.status(400).json({ 
-        message: 'Unsupported file format. Please upload a PDF, TXT, DOC, or DOCX file.' 
-      });
-    }
-
-    // Create a new legal context entry
-    const newDocument = await storage.createLegalContext({
-      title: originalname,
-      content: documentText,
+    console.log('Analyzing document:', {
+      name: req.file.originalname,
+      type: req.file.mimetype,
+      size: req.file.size
     });
 
-    // Send the document ID back to the client
-    return res.status(201).json({
-      message: 'Document uploaded successfully',
-      document: {
-        id: newDocument.id,
-        title: newDocument.title,
+    // Extract text from the document
+    let textContent = '';
+    
+    if (req.file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      // Handle DOCX files
+      try {
+        const buffer = req.file.buffer;
+        console.log('Processing DOCX file with mammoth...');
+        
+        // Use mammoth to extract text
+        const result = await mammoth.extractRawText({ buffer });
+        
+        textContent = result.value;
+        
+        // Log warnings if any
+        if (result.messages && result.messages.length > 0) {
+          console.log('Mammoth processing warnings:', result.messages);
+        }
+        
+        console.log('Successfully extracted text from DOCX document');
+        console.log('Sample of extracted text:', textContent.substring(0, 200) + '...');
+      } catch (mammothError) {
+        console.error('Error extracting text from DOCX:', mammothError);
+        return res.status(400).json({ 
+          error: 'Failed to extract text from DOCX file', 
+          message: mammothError instanceof Error ? mammothError.message : 'Unknown error'
+        });
       }
+    } else if (req.file.mimetype === 'text/plain') {
+      // Handle plain text files
+      textContent = req.file.buffer.toString('utf-8');
+      console.log('Successfully extracted text from plain text document');
+    } else {
+      return res.status(400).json({ 
+        error: 'Unsupported file type', 
+        message: 'Only DOCX and TXT files are supported' 
+      });
+    }
+
+    // Validate extracted text
+    if (!textContent || textContent.trim().length === 0) {
+      return res.status(400).json({ 
+        error: 'Empty document content', 
+        message: 'The document appears to be empty or could not be processed' 
+      });
+    }
+
+    console.log('Text length:', textContent.length, 'characters');
+    
+    // Store the document
+    const documentId = await storage.storeDocument({
+      name: req.file.originalname,
+      type: req.file.mimetype,
+      size: req.file.size,
+      content: textContent
+    });
+
+    res.json({ 
+      message: 'Document uploaded successfully',
+      documentId: documentId
     });
   } catch (error) {
     console.error('Error uploading document:', error);
-    return res.status(500).json({ message: 'Failed to process document upload' });
+    res.status(500).json({ 
+      error: 'Failed to upload document',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 }
 
-// Function to analyze a document with AI
-export async function analyzeDocument(req: Request, res: Response) {
+export async function analyzeUploadedDocument(req: Request, res: Response) {
   try {
-    const { documentId } = req.params;
-    const { question } = req.body;
-    
-    if (!documentId || !question) {
-      return res.status(400).json({ message: 'Document ID and question are required' });
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
     }
+
+    console.log('Analyzing document:', {
+      name: req.file.originalname,
+      type: req.file.mimetype,
+      size: req.file.size
+    });
+
+    // Extract text from the document
+    let textContent = '';
     
-    // Get the document from storage
-    const document = await storage.getLegalContext(parseInt(documentId));
-    
-    if (!document) {
-      return res.status(404).json({ message: 'Document not found' });
+    if (req.file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      // Handle DOCX files
+      try {
+        const buffer = req.file.buffer;
+        console.log('Processing DOCX file with mammoth...');
+        
+        // Use mammoth to extract text
+        const result = await mammoth.extractRawText({ buffer });
+        
+        textContent = result.value;
+        
+        // Log warnings if any
+        if (result.messages && result.messages.length > 0) {
+          console.log('Mammoth processing warnings:', result.messages);
+        }
+        
+        console.log('Successfully extracted text from DOCX document');
+        console.log('Sample of extracted text:', textContent.substring(0, 200) + '...');
+      } catch (mammothError) {
+        console.error('Error extracting text from DOCX:', mammothError);
+        return res.status(400).json({ 
+          error: 'Failed to extract text from DOCX file', 
+          message: mammothError instanceof Error ? mammothError.message : 'Unknown error'
+        });
+      }
+    } else if (req.file.mimetype === 'text/plain') {
+      // Handle plain text files
+      textContent = req.file.buffer.toString('utf-8');
+      console.log('Successfully extracted text from plain text document');
+    } else {
+      return res.status(400).json({ 
+        error: 'Unsupported file type', 
+        message: 'Only DOCX and TXT files are supported' 
+      });
     }
+
+    // Validate extracted text
+    if (!textContent || textContent.trim().length === 0) {
+      return res.status(400).json({ 
+        error: 'Empty document content', 
+        message: 'The document appears to be empty or could not be processed' 
+      });
+    }
+
+    console.log('Text length:', textContent.length, 'characters');
     
-    // Generate a response using OpenAI
-    const response = await generateLegalResponse(
-      question,
-      document.content,
-      'English' // Default language
-    );
+    // Analyze the document
+    console.log('Starting document analysis...');
+    const analysis = await analyzeDocument(textContent, req.file.originalname);
+    console.log('Analysis completed successfully');
+    console.log('Analysis length:', analysis.length, 'characters');
     
-    return res.status(200).json({
-      response,
-      documentTitle: document.title
+    res.json({ 
+      message: 'Document analyzed successfully',
+      analysis: analysis
     });
   } catch (error) {
     console.error('Error analyzing document:', error);
-    return res.status(500).json({ message: 'Failed to analyze document' });
+    res.status(500).json({ 
+      error: 'Failed to analyze document',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 }

@@ -1,7 +1,21 @@
-import OpenAI from "openai";
+import { OpenAI } from 'openai';
+import dotenv from 'dotenv';
 
-// The newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "" });
+dotenv.config();
+
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+if (!OPENROUTER_API_KEY) {
+  throw new Error('OPENROUTER_API_KEY is not set in environment variables');
+}
+
+const openai = new OpenAI({
+  apiKey: OPENROUTER_API_KEY,
+  baseURL: 'https://openrouter.ai/api/v1',
+  defaultHeaders: {
+    'HTTP-Referer': 'https://legal-assistant.com',
+    'X-Title': 'Legal Assistant'
+  }
+});
 
 /**
  * Generates a legal response based on the provided user message, legal context, and language.
@@ -17,44 +31,30 @@ export async function generateLegalResponse(
   language: string = "English"
 ): Promise<string> {
   try {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error("OPENAI_API_KEY is not set");
-    }
+    const systemPrompt = `You are a helpful legal assistant. Provide clear, accurate legal information while noting that you're not providing legal advice.${
+      context ? `\n\nContext: ${context}` : ''
+    }`;
 
-    const prompt = `
-You are a helpful legal assistant trained to analyze Ugandan legal documents and answer questions clearly and accurately.
-
-Context:
-${context}
-
-Question (original language: ${language}):
-${message}
-
-Instructions:
-- If the context is in a different language, translate it to English internally before answering.
-- Base your answer strictly on the provided context. If the answer is not in the context, say: "The document does not contain enough information to answer this."
-- Summarize any long sections as needed.
-- Keep the answer concise and formal, in the same language as the original question (${language}).
-
-Answer:
-    `;
-
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+    const completion = await openai.chat.completions.create({
+      model: "openai/gpt-4-turbo-preview",
       messages: [
-        { role: "system", content: "You are a helpful legal assistant specializing in Ugandan law." },
-        { role: "user", content: prompt }
+        {
+          role: "system",
+          content: systemPrompt
+        },
+        {
+          role: "user",
+          content: message
+        }
       ],
       temperature: 0.7,
-      max_tokens: 800,
+      max_tokens: 1000,
     });
 
-    return response.choices[0].message.content || "I'm sorry, I couldn't generate a response.";
+    return completion.choices[0]?.message?.content || 'No response generated';
   } catch (error) {
-    console.error("OpenAI API error:", error);
-    
-    // Return a friendly error message
-    return "I apologize, but I'm currently experiencing technical difficulties. Please try again later.";
+    console.error('Error generating legal response:', error);
+    throw new Error('Failed to generate AI response');
   }
 }
 
@@ -67,8 +67,8 @@ Answer:
  */
 export async function translateText(text: string, targetLanguage: string): Promise<string> {
   try {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error("OPENAI_API_KEY is not set");
+    if (!process.env.OPENROUTER_API_KEY) {
+      throw new Error("OPENROUTER_API_KEY is not set");
     }
 
     const prompt = `
@@ -81,7 +81,7 @@ Translation:
     `;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "deepseek/deepseek-v3-base:free",
       messages: [
         { role: "system", content: `You are a professional translator to ${targetLanguage}.` },
         { role: "user", content: prompt }

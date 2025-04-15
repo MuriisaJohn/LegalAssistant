@@ -2,6 +2,7 @@ import React from 'react';
 import { GavelIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Link } from 'wouter';
 
 interface HeaderProps {
   language: string;
@@ -16,14 +17,22 @@ const Header: React.FC<HeaderProps> = ({ language, setLanguage }) => {
           <div className="text-primary">
             <GavelIcon className="h-6 w-6" />
           </div>
-          <h1 className="text-xl font-serif font-semibold text-primary">LegalAI</h1>
+          <Link href="/" className="text-xl font-serif font-semibold text-primary hover:text-[#0f203a]">
+            LegalAI
+          </Link>
         </div>
         
         <div className="flex items-center space-x-4 md:space-x-6">
           <nav className="hidden md:flex space-x-6">
-            <a href="#" className="text-gray-600 hover:text-primary font-medium">Documents</a>
-            <a href="#" className="text-gray-600 hover:text-primary font-medium border-b-2 border-primary">Chat</a>
-            <a href="#" className="text-gray-600 hover:text-primary font-medium">About</a>
+            <Link href="/" className="text-gray-600 hover:text-primary font-medium">
+              Documents
+            </Link>
+            <Link href="/chat" className="text-gray-600 hover:text-primary font-medium">
+              Chat
+            </Link>
+            <Link href="/about" className="text-gray-600 hover:text-primary font-medium">
+              About
+            </Link>
           </nav>
           
           <div className="flex items-center space-x-3">

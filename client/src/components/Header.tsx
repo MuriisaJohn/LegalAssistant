@@ -1,24 +1,65 @@
-import React from 'react';
-import { Scale } from 'lucide-react';
+import { Link } from 'wouter';
+import { Button } from '@/components/ui/button';
+import { GavelIcon } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface HeaderProps {
-  language: string;
+  language?: string;
+  setLanguage?: (language: string) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ language }) => {
+export default function Header({ language = 'English', setLanguage = () => {} }: HeaderProps) {
   return (
-    <header className="bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-        <div className="flex items-center">
-          <Scale className="h-8 w-8 text-primary" />
-          <h1 className="ml-2 text-xl font-semibold text-neutral-900">Ugandan Legal Assistant</h1>
+    <header className="bg-white border-b border-gray-200 py-3 px-6">
+      <div className="container mx-auto flex justify-between items-center">
+        <div className="flex items-center space-x-2">
+          <div className="text-[#14284b]">
+            <GavelIcon className="h-6 w-6" />
+          </div>
+          <Link href="/" className="text-xl font-serif font-semibold text-[#14284b] hover:text-[#0f203a]">
+            LegalAI
+          </Link>
         </div>
-        <div className="text-sm bg-[#0891B2] text-white px-3 py-1 rounded-full">
-          {language}
+        
+        <div className="flex items-center space-x-4 md:space-x-6">
+          <nav className="hidden md:flex space-x-6">
+            <Link href="/" className="text-gray-600 hover:text-[#14284b] font-medium">
+              Documents
+            </Link>
+            <Link href="/chat" className="text-gray-600 hover:text-[#14284b] font-medium">
+              Chat
+            </Link>
+            <Link href="/about" className="text-gray-600 hover:text-[#14284b] font-medium">
+              About
+            </Link>
+          </nav>
+          
+          <div className="flex items-center space-x-3">
+            <Select
+              value={language}
+              onValueChange={setLanguage}
+            >
+              <SelectTrigger className="w-[100px] bg-white border-gray-200">
+                <SelectValue placeholder="English" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="English">English</SelectItem>
+                <SelectItem value="Swahili">Swahili</SelectItem>
+                <SelectItem value="Luganda">Luganda</SelectItem>
+                <SelectItem value="French">French</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Button variant="outline" className="bg-white border-gray-300 text-gray-700">
+              Login
+            </Button>
+            
+            <Button className="bg-[#14284b] hover:bg-[#0f203a] text-white">
+              Sign Up
+            </Button>
+          </div>
         </div>
       </div>
     </header>
   );
-};
-
-export default Header;
+}

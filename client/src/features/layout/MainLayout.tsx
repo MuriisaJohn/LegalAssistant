@@ -3,10 +3,13 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import Header from './Header';
 import Footer from './Footer';
 import LegalContextPanel from '../legal/LegalContextPanel';
-import SimpleChatInterface from '../chat/SimpleChatInterface';
+import ChatPanel from '../chat/ChatPanel';
 
-const MainLayout: React.FC = () => {
-  const [conversationId, setConversationId] = useState<string>();
+type MainLayoutProps = {
+  children: React.ReactNode;
+};
+
+const MainLayout = ({ children }: MainLayoutProps) => {
   const [language, setLanguage] = useState('English');
   const [isMobileContextVisible, setIsMobileContextVisible] = useState(false);
   const isMobile = useIsMobile();
@@ -50,19 +53,9 @@ const MainLayout: React.FC = () => {
               <LegalContextPanel />
             </div>
             
-            {/* Chat Interface */}
-            <div 
-              className={`flex-1 ${
-                isMobile && isMobileContextVisible ? 'hidden' : 'block'
-              }`}
-            >
-              <SimpleChatInterface 
-                toggleContext={toggleContext}
-                isMobileContextVisible={isMobileContextVisible}
-                conversationId={conversationId}
-                setConversationId={setConversationId}
-                language={language}
-              />
+            {/* Main chat area */}
+            <div className="flex-1 p-4">
+              <ChatPanel />
             </div>
           </div>
         </div>

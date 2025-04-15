@@ -3,6 +3,16 @@ import { v4 as uuidv4 } from 'uuid';
 import { storage } from '../../storage';
 import { generateLegalResponse } from './openai-service';
 import { MessageRequest, MessageResponse } from '../../../shared/schema';
+import { z } from 'zod';
+
+// Validation schema for chat messages
+const messageSchema = z.object({
+  message: z.string().min(1, 'Message cannot be empty'),
+  conversationId: z.string().optional(),
+  documentId: z.string().optional(),
+  language: z.string().default('English'),
+  context: z.string().optional()
+});
 
 /**
  * Handles retrieving all messages for a specific conversation
@@ -28,52 +38,23 @@ export async function getMessagesByConversationId(req: Request, res: Response) {
  */
 export async function handleChatMessage(req: Request, res: Response) {
   try {
-    const { message, conversationId: existingConversationId, language = 'English' } = req.body as MessageRequest;
+    const { message, context } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    const response = await generateLegalResponse(message, context);
     
-    // Generate a new conversation ID if none exists
-    const conversationId = existingConversationId || uuidv4();
-    
-    // Get all legal contexts to provide as context for the AI
-    const legalContexts = await storage.getAllLegalContexts();
-    const combinedContext = legalContexts.map(ctx => `${ctx.title}:\n${ctx.content}`).join('\n\n');
-    
-    // Create user message
-    const userMessage = {
-      role: 'user',
-      content: message,
-      conversationId,
-      createdAt: new Date()
-    };
-    
-    // Save user message to storage
-    await storage.createMessage(userMessage);
-    
-    // Generate AI response
-    const aiResponseContent = await generateLegalResponse(message, combinedContext, language);
-    
-    // Create AI message
-    const aiMessage = {
-      role: 'assistant',
-      content: aiResponseContent,
-      conversationId,
-      createdAt: new Date()
-    };
-    
-    // Save AI message to storage
-    await storage.createMessage(aiMessage);
-    
-    // Format response
-    const response: MessageResponse = {
-      message: {
-        role: 'assistant',
-        content: aiResponseContent
-      },
-      conversationId
-    };
-    
-    res.json(response);
+    return res.json({
+      message: response,
+      success: true
+    });
   } catch (error) {
-    console.error('Error generating chat response:', error);
-    res.status(500).json({ error: 'Failed to generate chat response' });
+    console.error('Error in chat controller:', error);
+    return res.status(500).json({
+      error: 'Failed to process chat message',
+      success: false
+    });
   }
 }

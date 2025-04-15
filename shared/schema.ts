@@ -41,6 +41,26 @@ export const insertLegalContextSchema = createInsertSchema(legalContexts).pick({
   title: true,
 });
 
+// Document schema
+export const documents = pgTable("documents", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  content: text("content").notNull(),
+  type: text("type").notNull(),
+  size: integer("size").notNull(),
+  analysis: text("analysis"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertDocumentSchema = createInsertSchema(documents).pick({
+  name: true,
+  content: true,
+  type: true,
+  size: true,
+  analysis: true,
+});
+
 // Define types for our schemas
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -50,6 +70,9 @@ export type Message = typeof messages.$inferSelect;
 
 export type InsertLegalContext = z.infer<typeof insertLegalContextSchema>;
 export type LegalContext = typeof legalContexts.$inferSelect;
+
+export type InsertDocument = z.infer<typeof insertDocumentSchema>;
+export type Document = typeof documents.$inferSelect;
 
 // Define message request and response schemas for API
 export const messageRequestSchema = z.object({
